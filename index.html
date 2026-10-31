@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#0d0b1e">
+<title>同词相遇 · 各想一个词，同时揭晓</title>
+<style>
+:root{
+  --bg:#0d0b1e; --card:rgba(255,255,255,.07); --line:rgba(255,255,255,.14);
+  --txt:#f4f2ff; --dim:#a9a3c7; --acc:#8b6bff; --acc2:#ff8ac0; --ok:#3ddc97;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  background:
+    radial-gradient(900px 600px at 15% -10%, #3a1e6e 0%, transparent 60%),
+    radial-gradient(700px 500px at 110% 10%, #6b1d4a 0%, transparent 55%),
+    radial-gradient(600px 600px at 50% 120%, #16255e 0%, transparent 60%),
+    var(--bg);
+  color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  min-height:100dvh; display:flex; justify-content:center;
+  padding:max(16px,env(safe-area-inset-top)) 16px max(20px,env(safe-area-inset-bottom));
+}
+#app{width:100%;max-width:460px;display:flex;flex-direction:column;gap:14px}
+.brand{text-align:center;margin-top:6px}
+.brand h1{margin:0;font-size:27px;letter-spacing:2px;font-weight:800;
+  background:linear-gradient(100deg,#fff 10%,#c7b6ff 50%,#ffb3d9 90%);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.brand p{margin:8px 0 0;color:var(--dim);font-size:13px;line-height:1.7}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  border:none;border-radius:16px;padding:16px;font-size:16px;font-weight:700;
+  color:#fff;background:linear-gradient(100deg,var(--acc),var(--acc2));cursor:pointer;
+  transition:transform .12s, opacity .2s;font-family:inherit}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;border:1px solid var(--line);font-weight:600;color:var(--txt)}
+.btn:disabled{opacity:.45}
+.btn.sm{padding:12px;font-size:14px;border-radius:14px}
+input[type=text]{
+  width:100%;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--txt);
+  border-radius:16px;padding:17px 16px;font-size:18px;font-family:inherit;outline:none;
+  text-align:center;letter-spacing:1px;transition:border .2s}
+input[type=text]:focus{border-color:var(--acc)}
+input::placeholder{color:#6f6a8c;letter-spacing:0}
+input.code{letter-spacing:10px;font-size:26px;font-weight:800;text-transform:uppercase;padding-left:24px}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.hr{height:1px;background:var(--line);margin:16px 0}
+.hint{color:var(--dim);font-size:13px;line-height:1.7;text-align:center}
+.roomcode{font-size:40px;font-weight:900;letter-spacing:12px;text-align:center;
+  padding-left:12px;background:linear-gradient(100deg,#fff,#b9a4ff);-webkit-background-clip:text;
+  background-clip:text;color:transparent;margin:4px 0 10px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);
+  background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+.center{text-align:center}
+.players{display:flex;gap:8px;margin:14px 0 4px}
+.pbox{flex:1;background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center}
+.pbox .nm{font-size:13px;color:var(--dim)}
+.pbox .st{font-size:14px;font-weight:700;margin-top:6px}
+.st.ok{color:var(--ok)} .st.wait{color:#ffcf6b} .st.off{color:#8a86a3}
+.dots span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--acc);
+  margin:0 2px;animation:bl 1.2s infinite}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes bl{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.reveal{display:flex;gap:12px;margin:6px 0 4px}
+.wcard{flex:1;background:rgba(255,255,255,.09);border:1px solid var(--line);border-radius:18px;
+  padding:26px 10px;text-align:center;animation:pop .4s cubic-bezier(.2,1.4,.4,1) both}
+.wcard .who{font-size:12px;color:var(--dim);margin-bottom:8px}
+.wcard .w{font-size:26px;font-weight:800;word-break:break-all;line-height:1.25}
+.wcard.b{animation-delay:.12s}
+@keyframes pop{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
+.result{text-align:center;font-size:15px;line-height:1.8;margin:14px 0 2px;color:var(--dim)}
+.result b{color:var(--txt)}
+.big{font-size:22px;font-weight:800;color:var(--ok)}
+.hist{margin-top:14px;display:flex;flex-direction:column;gap:7px}
+.hrow{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim)}
+.hrow .n{width:26px;flex:none;color:#6f6a8c}
+.hrow em{font-style:normal;color:var(--txt);background:rgba(255,255,255,.08);
+  border-radius:8px;padding:3px 9px}
+.timer{font-variant-numeric:tabular-nums;font-weight:800;color:#ffcf6b}
+.toast{position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);opacity:0;
+  background:rgba(30,24,60,.96);border:1px solid var(--line);color:#fff;padding:11px 18px;
+  border-radius:999px;font-size:14px;transition:.25s;pointer-events:none;z-index:99}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.foot{margin-top:auto;padding-top:18px;text-align:center;color:#5f5a7d;font-size:11px}
+[hidden]{display:none!important}
+.net{position:fixed;top:8px;left:50%;transform:translateX(-50%);font-size:11px;color:#ffcf6b;z-index:98}
+</style>
+</head>
+<body>
+<div class="net" id="net" hidden>正在连接游戏服务器…</div>
+<div id="app">
+  <div class="brand">
+    <h1>同词相遇</h1>
+    <p>各想一个词，同时揭晓<br>撞上了，就是同频</p>
+  </div>
+
+  <!-- 首页 -->
+  <section id="home" class="card">
+    <button class="btn" id="btnCreate">开一局（生成房间号）</button>
+    <div class="hr"></div>
+    <input type="text" class="code" id="joinCode" maxlength="4" placeholder="房间号" autocomplete="off" inputmode="latin">
+    <div style="height:10px"></div>
+    <button class="btn ghost" id="btnJoin">加入好友的房间</button>
+    <p class="hint" style="margin-top:14px">朋友发你链接，点开就直接进房间</p>
+  </section>
+
+  <!-- 房间 -->
+  <section id="room" class="card" hidden>
+    <div class="center">
+      <span class="pill" id="roomPill">房间</span>
+      <div class="roomcode" id="roomCode">----</div>
+      <button class="btn sm" id="btnShare">📎 复制邀请链接，发给朋友</button>
+    </div>
+
+    <div class="players">
+      <div class="pbox"><div class="nm">你</div><div class="st ok" id="meSt">已就位</div></div>
+      <div class="pbox"><div class="nm" id="opNm">对方</div><div class="st wait" id="opSt">等朋友进来…</div></div>
+    </div>
+
+    <!-- 等待 -->
+    <div id="waiting">
+      <p class="hint" style="margin-top:16px">
+        <span class="dots"><span></span><span></span><span></span></span><br>
+        把链接甩给朋友，他点开就在这儿了
+      </p>
+    </div>
+
+    <!-- 出词 -->
+    <div id="input" hidden>
+      <div class="hr"></div>
+      <div class="center" style="margin-bottom:10px">
+        <span class="pill" id="roundPill">第 1 轮</span>
+        <span class="pill" id="timerPill" style="margin-left:6px">⏱ <span class="timer" id="timer">60</span>s</span>
+      </div>
+      <div id="themeBox" class="center" hidden style="margin:2px 0 14px;line-height:1.7;font-size:14px;color:var(--dim)">
+        从这两个词继续联想 → <b id="themeWords" style="color:var(--txt)"></b>
+      </div>
+      <input type="text" id="wordInput" maxlength="12" placeholder="想一个词…" autocomplete="off">
+      <div style="height:10px"></div>
+      <button class="btn" id="btnSubmit">封存，等对方揭晓</button>
+      <p class="hint" style="margin-top:12px">别把词说出来，撞上才好玩</p>
+    </div>
+
+    <!-- 已提交 -->
+    <div id="sealed" hidden>
+      <div class="hr"></div>
+      <p class="result">你的词已封存 🤐<br><span id="sealedHint">等对方也想好…</span></p>
+    </div>
+
+    <!-- 揭晓 -->
+    <div id="revealBox" hidden>
+      <div class="hr"></div>
+      <div class="reveal">
+        <div class="wcard"><div class="who">你</div><div class="w" id="wA">—</div></div>
+        <div class="wcard b"><div class="who" id="wBNm">对方</div><div class="w" id="wB">—</div></div>
+      </div>
+      <div class="result" id="revealMsg"></div>
+      <div id="nextWrap" style="margin-top:6px"></div>
+      <div class="hist" id="hist"></div>
+    </div>
+  </section>
+
+  <div class="foot">同词相遇 · 网页版｜打开就能玩，不用下载</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="./mqtt.min.js"></script>
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var BROKER = 'wss://broker.emqx.io:8084/mqtt';
+  var ALPHA = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+
+  var me = { id: 'u' + Math.random().toString(36).slice(2,10), name:'你' };
+  var client = null, topic = null, subbed = false;
+  var S = null;              // 权威状态（房主持有 / 客户端接收）
+  var isHost = false, roomId = null;
+  var myWord = null, localSubmitted = false;
+  var timerH = null, lastSeen = 0;
+
+  function toast(m){ var t=$('toast'); t.textContent=m; t.classList.add('on');
+    clearTimeout(t._t); t._t=setTimeout(function(){t.classList.remove('on');},1800); }
+
+  function genCode(){ var s=''; for(var i=0;i<4;i++) s += ALPHA[Math.floor(Math.random()*ALPHA.length)]; return s; }
+  function norm(s){ return (s||'').trim().replace(/[\s,，。.!！?？、·"'“”‘’()（）]/g,'').toLowerCase(); }
+
+  // ---------- 网络 ----------
+  function connect(cb){
+    if(client && client.connected){ cb&&cb(); return; }
+    $('net').hidden = false;
+    if(!client){
+      var cid = 'tc_' + me.id + '_' + Math.random().toString(36).slice(2,6);
+      client = mqtt.connect(BROKER, {
+        clientId: cid, keepalive: 30, reconnectPeriod: 2500,
+        connectTimeout: 12000, clean: true
+      });
+      client.on('connect', function(){
+        $('net').hidden = true;
+        if(roomId) subscribe();
+        if(cb) cb();
+      });
+      client.on('reconnect', function(){ $('net').hidden=false; });
+      client.on('error', function(e){ console.warn('mqtt err', e && e.message); });
+      client.on('offline', function(){ $('net').hidden=false; });
+      client.on('message', onMsg);
+    } else { client.reconnect(); }
+  }
+
+  function subscribe(){
+    if(!client || !client.connected) return;
+    topic = 'tc/' + roomId;
+    if(subbed){ try{client.unsubscribe(topic);}catch(e){} subbed=false; }
+    client.subscribe(topic, {qos:0}, function(){ subbed = true; });
+  }
+
+  window.__log = [];
+  function L(){ try{ window.__log.push(Array.prototype.slice.call(arguments).join(' ')); if(window.__log.length>80) window.__log.shift(); }catch(e){} }
+  function send(o){ L('SEND', o.t, o.word||'', 'conn='+(client&&client.connected));
+    if(client && client.connected){ client.publish(topic, JSON.stringify(o)); } }
+
+  function onMsg(t, payload){
+    var m; try{ m = JSON.parse(payload.toString()); }catch(e){ return; }
+    if(m.from === me.id) return;
+    L('RECV', m.t, 'from='+m.from, 'host='+isHost);
+    if(m.t === 'hello'){
+      if(isHost){
+        if(!S.players.some(function(p){return p.id===m.from}))
+          S.players.push({id:m.from, host:false});
+        if(S.players.length >= 2 && S.phase === 'wait'){
+          S.phase = 'input'; S.deadline = Date.now() + S.limit*1000; S.words = {};
+        }
+        pushState();
+      }
+      if(m.probe){ /* 有人找房间 */ }
+    }
+    else if(m.t === 'ping'){ if(isHost) pushState(); }
+    else if(m.t === 'state'){ if(!isHost){ applyState(m.s); } }
+    else if(m.t === 'submit'){
+      if(isHost && S && m.round === S.round){
+        S.words[m.from] = m.word;
+        if(Object.keys(S.words).length >= Math.min(2, S.players.length)) startReveal();
+        else pushState();
+      }
+    }
+    else if(m.t === 'next'){ if(isHost) nextRound(); }
+    else if(m.t === 'bye'){ if(isHost){ S.players = S.players.filter(function(p){return p.id!==m.from});
+        if(S.players.length<2 && S.phase==='reveal'){ /* keep */ } pushState(); } }
+  }
+
+  // ---------- 房主权威 ----------
+  function pushState(){ if(isHost && S) send({t:'state', from:me.id, s:S}); render(); }
+
+  function applyState(s){
+    if(S && s.round !== S.round){ localSubmitted = false; myWord = null; }
+    S = s; render();
+  }
+
+  function newState(){
+    return { players:[{id:me.id, host:true}], round:1, phase:'wait', words:{}, hist:[], limit:60, deadline:0 };
+  }
+
+  function startReveal(){
+    S.phase = 'reveal'; S.deadline = 0;
+    pc('reveal');
+    pushState();
+  }
+
+  function pc(n){ /* 轻提示 */ }
+
+  function nextRound(){
+    S.hist.push({ a:S.words[Object.keys(S.words)[0]], b:S.words[Object.keys(S.words)[1]] });
+    S.round++; S.words = {}; S.phase = 'input';
+    S.deadline = Date.now() + S.limit*1000;
+    myWord=null; localSubmitted=false;
+    pushState();
+  }
+
+  // ---------- 渲染 ----------
+  function render(){
+    if(!S) return;
+    var players = S.players || [];
+    var other = players.find(function(p){ return p.id !== me.id; });
+    $('roomCode').textContent = roomId;
+    $('opNm').textContent = other ? '对方' : '对方';
+    $('opSt').textContent = other ? '在线' : '等朋友进来…';
+    $('opSt').className = 'st ' + (other ? 'ok' : 'wait');
+
+    if(players.length < 2){
+      $('waiting').hidden = false; $('input').hidden = true; $('sealed').hidden = true; $('revealBox').hidden = true;
+      return;
+    }
+    $('waiting').hidden = true;
+
+    if(S.phase === 'input' || S.phase === 'wait'){
+      $('revealBox').hidden = true;
+      $('roundPill').textContent = '第 ' + S.round + ' 轮';
+      var theme = (S.hist && S.hist.length) ? S.hist[S.hist.length-1] : null;
+      if(theme){ $('themeBox').hidden=false; $('themeWords').textContent = theme.a + ' × ' + theme.b; }
+      else { $('themeBox').hidden=true; }
+      if(localSubmitted){ $('input').hidden=true; $('sealed').hidden=false;
+        $('sealedHint').textContent = '等对方也想好…'; }
+      else { $('sealed').hidden=true; $('input').hidden=false; }
+      $('meSt').textContent = localSubmitted ? '已想好' : '在想词';
+      $('meSt').className = 'st ' + (localSubmitted? 'ok':'wait');
+      $('opSt').textContent = hasOtherWord() ? '已想好' : '在想词';
+      $('opSt').className = 'st ' + (hasOtherWord()? 'ok':'wait');
+    }
+    else if(S.phase === 'reveal'){
+      $('input').hidden = true; $('sealed').hidden = true; $('revealBox').hidden = false;
+      var keys = Object.keys(S.words);
+      var wa = S.words[me.id] || '—';
+      var wb = other ? (S.words[other.id] || '—') : '—';
+      $('wA').textContent = wa; $('wB').textContent = wb;
+      $('meSt').textContent='已揭晓'; $('meSt').className='st ok';
+      $('opSt').textContent='已揭晓'; $('opSt').className='st ok';
+      var same = norm(wa) === norm(wb);
+      if(same){
+        $('revealMsg').innerHTML = '<div class="big">✨ 第 ' + S.round + ' 轮就撞上了</div>你们想到同一个词，同频了';
+        $('nextWrap').innerHTML = '<button class="btn ghost sm" onclick="location.reload()">再开一局</button>';
+      } else {
+        $('revealMsg').innerHTML = '没撞上 —— 不过这两个词现在是你们的<b>共同线索</b><br>下一轮各从一个词继续联想';
+        $('nextWrap').innerHTML = '<button class="btn" id="btnNext2">继续第 ' + (S.round+1) + ' 轮</button>';
+        var b = $('btnNext2');
+        if(b) b.onclick = function(){
+          if(isHost) nextRound();
+          else { send({t:'next', from:me.id}); }
+        };
+      }
+      renderHist();
+    }
+  }
+
+  function hasOtherWord(){
+    var other = S.players.find(function(p){return p.id!==me.id});
+    return !!(other && S.words[other.id]);
+  }
+
+  function renderHist(){
+    var h = $('hist'); if(!S.hist || !S.hist.length){ h.innerHTML=''; return; }
+    h.innerHTML = S.hist.map(function(x,i){
+      return '<div class="hrow"><span class="n">第'+(i+1)+'轮</span><em>'+esc(x.a||'')+'</em> × <em>'+esc(x.b||'')+'</em></div>';
+    }).join('');
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]}); }
+
+  // ---------- 计时 ----------
+  function startTimer(){
+    clearInterval(timerH);
+    timerH = setInterval(function(){
+      if(!S || S.phase!=='input'){ $('timerPill').hidden = true; return; }
+      $('timerPill').hidden = false;
+      if(!S.deadline){ $('timer').textContent='∞'; return; }
+      var left = Math.max(0, Math.ceil((S.deadline - Date.now())/1000));
+      $('timer').textContent = left;
+    }, 250);
+  }
+
+  // ---------- 动作 ----------
+  function enterRoom(code, host){
+    roomId = code; isHost = host;
+    $('home').hidden = true; $('room').hidden = false;
+    history.replaceState(null,'','?r=' + code);
+    connect(function(){
+      subscribe();
+      if(isHost){
+        S = newState(); render();
+        send({t:'state', from:me.id, s:S});
+      } else {
+        send({t:'hello', from:me.id});
+        // 反复 ping，房主不在时也能连上
+        var tries=0, iv=setInterval(function(){
+          if(S){ clearInterval(iv); return; }
+          if(tries++ > 8){ clearInterval(iv); toast('没找到这个房间，让房主重新开一局'); return; }
+          send({t:'hello', from:me.id}); send({t:'ping', from:me.id});
+        }, 1200);
+      }
+    });
+  }
+
+  $('btnCreate').onclick = function(){
+    var c = genCode(); enterRoom(c, true);
+  };
+  $('btnJoin').onclick = function(){
+    var c = ($('joinCode').value||'').trim().toUpperCase();
+    if(c.length<4){ toast('房间号是 4 位'); return; }
+    enterRoom(c, false);
+  };
+  $('joinCode').addEventListener('input', function(){
+    this.value = this.value.toUpperCase().replace(/[^0-9A-Z]/g,'');
+  });
+
+  $('btnShare').onclick = function(){
+    var url = location.origin + location.pathname + '?r=' + roomId;
+    function done(){ toast('链接已复制，甩给朋友就行'); }
+    if(navigator.share){ navigator.share({title:'同词相遇', text:'来玩同词相遇，看我们几轮撞上', url:url}).catch(function(){}); return; }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(done, function(){ window.prompt('复制这个链接发给朋友：', url); });
+    } else { window.prompt('复制这个链接发给朋友：', url); }
+  };
+
+  $('btnSubmit').onclick = function(){
+    var w = ($('wordInput').value||'').trim();
+    if(!w){ toast('先想一个词'); return; }
+    if(w.length>12){ toast('短一点'); return; }
+    myWord = w; localSubmitted = true;
+    if(isHost){
+      S.words[me.id] = w;
+      if(Object.keys(S.words).length >= 2) startReveal(); else pushState();
+    } else {
+      send({t:'submit', from:me.id, round:S? S.round : 1, word:w});
+      // 本地先切到“已封存”
+      if(S){ S.words[me.id] = w; }
+      render();
+    }
+    $('wordInput').value = '';
+  };
+  $('wordInput').addEventListener('keydown', function(e){ if(e.key==='Enter') $('btnSubmit').click(); });
+
+  window.__tc = { get S(){return S}, get host(){return isHost}, get room(){return roomId},
+    get conn(){ return client && client.connected } };
+  window.addEventListener('beforeunload', function(){ if(roomId && isHost) send({t:'bye', from:me.id}); });
+
+  // 首次进入：从链接带房间号
+  (function boot(){
+    var r = new URLSearchParams(location.search).get('r');
+    startTimer();
+    if(r && r.length>=4){ $('joinCode').value = r.toUpperCase(); enterRoom(r.toUpperCase(), false); }
+  })();
+})();
+</script>
+</body>
+</html>
