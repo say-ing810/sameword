@@ -217,15 +217,11 @@ input.code{letter-spacing:10px;font-size:26px;font-weight:800;text-transform:upp
     client.subscribe(topic, {qos:0}, function(){ subbed = true; });
   }
 
-  window.__log = [];
-  function L(){ try{ window.__log.push(Array.prototype.slice.call(arguments).join(' ')); if(window.__log.length>80) window.__log.shift(); }catch(e){} }
-  function send(o){ L('SEND', o.t, o.word||'', 'conn='+(client&&client.connected));
-    if(client && client.connected){ client.publish(topic, JSON.stringify(o)); } }
+  function send(o){ if(client && client.connected){ client.publish(topic, JSON.stringify(o)); } }
 
   function onMsg(t, payload){
     var m; try{ m = JSON.parse(payload.toString()); }catch(e){ return; }
     if(m.from === me.id) return;
-    L('RECV', m.t, 'from='+m.from, 'host='+isHost);
     if(m.t === 'hello'){
       if(isHost){
         if(!S.players.some(function(p){return p.id===m.from}))
@@ -420,8 +416,6 @@ input.code{letter-spacing:10px;font-size:26px;font-weight:800;text-transform:upp
   };
   $('wordInput').addEventListener('keydown', function(e){ if(e.key==='Enter') $('btnSubmit').click(); });
 
-  window.__tc = { get S(){return S}, get host(){return isHost}, get room(){return roomId},
-    get conn(){ return client && client.connected } };
   window.addEventListener('beforeunload', function(){ if(roomId && isHost) send({t:'bye', from:me.id}); });
 
   // 首次进入：从链接带房间号
