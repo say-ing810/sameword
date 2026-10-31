@@ -114,6 +114,10 @@ input.code{letter-spacing:10px;font-size:26px;font-weight:800;text-transform:upp
       <span class="pill" id="roomPill">房间</span>
       <div class="roomcode" id="roomCode">----</div>
       <button class="btn sm" id="btnShare">📎 复制邀请链接，发给朋友</button>
+      <div id="shareBox" hidden style="margin-top:10px">
+        <input type="text" id="shareUrl" readonly style="font-size:12px;letter-spacing:0;padding:12px;text-align:left">
+        <p class="hint" style="margin:8px 0 0">长按上面的链接 → 复制 → 发给朋友</p>
+      </div>
     </div>
 
     <div class="players">
@@ -391,11 +395,17 @@ input.code{letter-spacing:10px;font-size:26px;font-weight:800;text-transform:upp
 
   $('btnShare').onclick = function(){
     var url = location.origin + location.pathname + '?r=' + roomId;
-    function done(){ toast('链接已复制，甩给朋友就行'); }
-    if(navigator.share){ navigator.share({title:'同词相遇', text:'来玩同词相遇，看我们几轮撞上', url:url}).catch(function(){}); return; }
+    var box = $('shareBox');
+    function showManual(){
+      box.hidden = false;
+      var i = $('shareUrl');
+      i.value = url; i.focus(); i.select();
+      try{ i.setSelectionRange(0, url.length); }catch(e){}
+    }
+    function done(){ toast('链接已复制，甩给朋友就行'); showManual(); }
     if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(url).then(done, function(){ window.prompt('复制这个链接发给朋友：', url); });
-    } else { window.prompt('复制这个链接发给朋友：', url); }
+      navigator.clipboard.writeText(url).then(done, showManual);
+    } else { showManual(); }
   };
 
   $('btnSubmit').onclick = function(){
